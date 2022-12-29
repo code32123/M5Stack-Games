@@ -1,11 +1,14 @@
 # Flickerless, control stacking snakey!
 
+if not runApp:
+	raise OSError
+
 print("Snakey loading 1")
 
 import time
 import random
 
-import Display
+import display
 # import ili9342c
 import font_16x32, font_8x16
 import buttons
@@ -15,7 +18,7 @@ import json
 menuSelection = 0
 settings = [1, 0] # Speed, Mode
 settingsOptions = [[0.5,1,2], ["Normal", "Infinite"]]
-dificultyCode = "10"
+dificultyCode = "1-Normal"
 tickSpeed = 6
 paused = False
 DeathMode = "Normal"
@@ -23,14 +26,15 @@ Gamemode = "Intro Menu" # Keeps track of which stage the game is currently in
 # this is generally either Intro Menu, Gameplay, or Dead
 
 DisplayDone = False # Makes sure the display is only drawn once to prevent flickering
-disp.fill(Display.colors.Black)
-time.sleep(0.2)
+disp.fill(display.colors.Black)
+# time.sleep(0.2)
 spriteBuffer = bytearray(512) # Keeps track of the buffer for the sprites. Not sure how it works, but here's the example program I got it from:
 #https://github.com/russhughes/ili9342c_mpy/blob/main/examples/M5STACK/bitarray.py
 
 print("Snakey loading 2")
 
 def highScoreManager(currentScore, dificultyCode):
+	print("HS MANAGER:", dificultyCode)
 	try:
 		with open("highScore", 'r') as f:
 			highScoreData = json.loads(f.read())
@@ -57,7 +61,7 @@ def highScoreManager(currentScore, dificultyCode):
 
 def updateInputStack():
 	global up, down, left, right, button, inputStack, upOpen, downOpen, rightOpen, leftOpen
-	up, down, left, right = (buttons.buttons.get_pressed() & buttons.K_UP), (buttons.buttons.get_pressed() & buttons.K_DOWN), (buttons.buttons.get_pressed() & buttons.K_LEFT), (buttons.buttons.get_pressed() & buttons.K_RIGHT)
+	up, down, left, right = (buttons.buttons.getPressed() & buttons.K_UP), (buttons.buttons.getPressed() & buttons.K_DOWN), (buttons.buttons.getPressed() & buttons.K_LEFT), (buttons.buttons.getPressed() & buttons.K_RIGHT)
 	# Manages the input stack, adding new keypresses to the stack
 	if up and upOpen:
 		inputStack.append(directions.UP)
@@ -107,13 +111,13 @@ class snake:
 	def draw(self, sprite, cellX, cellY):
 		global spi#, tft
 		if sprite=="apple": # To draw an apple, pull from the sprites prgram and color it red on black (Leaving off the black will cause a CPU panic because of an unhandled C exception. Have fun!)
-			disp.drawIcon(sprites.Apple, GridCellToPixel(cellX), GridCellToPixel(cellY), Display.colors.Red)
+			disp.drawIcon(sprites.Apple, GridCellToPixel(cellX), GridCellToPixel(cellY), display.colors.Red)
 		elif sprite=="head":
-			disp.drawIcon(sprites.SnakeHead, GridCellToPixel(cellX), GridCellToPixel(cellY), Display.colors.Green)
+			disp.drawIcon(sprites.SnakeHead, GridCellToPixel(cellX), GridCellToPixel(cellY), display.colors.Green)
 		elif sprite=="body":
-			disp.drawIcon(sprites.SnakeBody, GridCellToPixel(cellX), GridCellToPixel(cellY), Display.colors.Green)
+			disp.drawIcon(sprites.SnakeBody, GridCellToPixel(cellX), GridCellToPixel(cellY), display.colors.Green)
 		elif sprite=="empty":
-			disp.drawIcon(sprites.Blank, GridCellToPixel(cellX), GridCellToPixel(cellY), Display.colors.Green)
+			disp.drawIcon(sprites.Blank, GridCellToPixel(cellX), GridCellToPixel(cellY), display.colors.Green)
 
 	def genNewApple(self): # Generates a valid apple by regenerating it until it doesn't land on a snake bit
 		toCheck = (random.randint(0, 19), random.randint(0, 14))
@@ -150,13 +154,13 @@ def main():
 	global DisplayDone, Gamemode, spriteBuffer, gameSnake, i, up, down, left, right, upOpen, downOpen, leftOpen, rightOpen, inputStack, tickSpeed, menuSelection, settings, settingsOptions, DeathMode, paused, spi, dificultyCode#, tft
 	if Gamemode == "Intro Menu": # if your in the intro menu
 		if not DisplayDone: # if the display hasn't already been drawn
-			disp.fill(Display.colors.Black)
+			disp.fill(display.colors.Black)
 			disp.text(
 				font_16x32,
 				"SNAKEY",
 				100,
 				90,
-				Display.colors.Green
+				display.colors.Green
 			)
 			time.sleep(0.01)
 			disp.text(
@@ -164,46 +168,46 @@ def main():
 				"Press Start",
 				100+3,
 				90+30,
-				Display.colors.Green
+				display.colors.Green
 			)
 			DisplayDone = True
 
-		if buttons.buttons.get_pressed() & buttons.K_START: # if start is pressed, erase the screen, create a snake object, clear the input stack,
+		if buttons.buttons.getPressed() & buttons.K_START: # if start is pressed, erase the screen, create a snake object, clear the input stack,
 			Gamemode = "Game Play"
 			DisplayDone = False
-			disp.fill(Display.colors.Black) # Erase the snake
+			disp.fill(display.colors.Black) # Erase the snake
 			gameSnake = snake() # Create a new snake
 			up, down, left, right = False, False, False, False # Keeps track of which buttons are currently pressed
 			upOpen, downOpen, leftOpen, rightOpen = False, False, False, False # Keeps track of whether the buttons is already pressed, so that when you hold it down it only triggers once
 			i = 0
 			inputStack = []
 
-		if buttons.buttons.get_pressed() & buttons.K_SELECT: # if start is pressed, erase the screen, create a snake object, clear the input stack,
+		if buttons.buttons.getPressed() & buttons.K_SELECT: # if start is pressed, erase the screen, create a snake object, clear the input stack,
 			Gamemode = "Settings Menu"
 			menuSelection = 0
 			DisplayDone = False
 			inputStack = []
-			disp.fill(Display.colors.Black)
+			disp.fill(display.colors.Black)
 
-		if buttons.buttons.get_pressed() & buttons.K_B:
+		if buttons.buttons.getPressed() & buttons.K_B:
 			return True
 
 	elif Gamemode == "Settings Menu":
 		if not DisplayDone: # The same as the menu, but with different text
-			disp.drawIcon(sprites.Cursor, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), Display.colors.Green)
+			disp.drawIcon(sprites.Cursor, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), display.colors.Green)
 			disp.text(
 				font_16x32,
 				"SNAKEY",
 				52,
 				20,
-				Display.colors.Green
+				display.colors.Green
 			)
 			disp.text(
 				font_8x16,
 				"Speed: " + str(settingsOptions[0][settings[0]]) + "         ",
 				52,
 				50,
-				Display.colors.Green
+				display.colors.Green
 			)
 			time.sleep(0.01)
 			disp.text(
@@ -211,41 +215,42 @@ def main():
 				"Mode:  " + str(settingsOptions[1][settings[1]]) + "         ",
 				52,
 				50+15,
-				Display.colors.Green
+				display.colors.Green
 			)
 			disp.text(
 				font_8x16,
 				"A/B is pause/unpause",
 				52,
 				50+30,
-				Display.colors.Green
+				display.colors.Green
 			)
 			disp.text(
 				font_8x16,
 				"Arrows are movement",
 				52,
 				50+45,
-				Display.colors.Green
+				display.colors.Green
 			)
 			disp.text(
 				font_8x16,
 				"Select is settings (Here)",
 				52,
 				50+60,
-				Display.colors.Green
+				display.colors.Green
 			)
 			disp.text(
 				font_8x16,
 				"Start is continue",
 				52,
 				50+75,
-				Display.colors.Green
+				display.colors.Green
 			)
 			DisplayDone = True
 
-		if buttons.buttons.get_pressed() & buttons.K_START:
+		if buttons.buttons.getPressed() & buttons.K_START:
 			Gamemode = "Intro Menu"
-			dificultyCode = str(settingsOptions[0][settings[0]]) + str(settingsOptions[1][settings[1]])
+			dificultyCode = str(settingsOptions[0][settings[0]]) + '-' + str(settingsOptions[1][settings[1]])
+
 			DisplayDone = False
 			if settingsOptions[0][settings[0]] == 0.5:
 				tickSpeed = 8
@@ -260,15 +265,15 @@ def main():
 			newestButtonPress = inputStack.pop(0)
 			if newestButtonPress == directions.UP:
 				if menuSelection > 0:
-					disp.drawIcon(sprites.Blank, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), Display.colors.Green)
+					disp.drawIcon(sprites.Blank, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), display.colors.Green)
 					menuSelection += -1
-					disp.drawIcon(sprites.Cursor, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), Display.colors.Green)
+					disp.drawIcon(sprites.Cursor, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), display.colors.Green)
 
 			if newestButtonPress == directions.DOWN:
 				if menuSelection < 1:
-					disp.drawIcon(sprites.Blank, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), Display.colors.Green)
+					disp.drawIcon(sprites.Blank, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), display.colors.Green)
 					menuSelection += 1
-					disp.drawIcon(sprites.Cursor, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), Display.colors.Green)
+					disp.drawIcon(sprites.Cursor, GridCellToPixel(2), GridCellToPixel((menuSelection)+3), display.colors.Green)
 
 			if newestButtonPress == directions.LEFT:
 				if settings[menuSelection] > 0:
@@ -282,7 +287,7 @@ def main():
 
 	elif Gamemode == "Game Play":
 		if paused:
-			if buttons.buttons.get_pressed() & buttons.K_B: # if start is pressed, erase the screen, create a snake object, clear the input stack,
+			if buttons.buttons.getPressed() & buttons.K_B: # if start is pressed, erase the screen, create a snake object, clear the input stack,
 				paused = False
 		else:
 			i += 1
@@ -293,52 +298,52 @@ def main():
 					gameSnake.move(gameSnake.direction) # Note that the snakes current direction is invalid, but it defaults to it's current direction
 				else:
 					gameSnake.move(inputStack.pop(0)) # Get and remove the first item, then advance the list to the next position
-			if buttons.buttons.get_pressed() & buttons.K_A: # if start is pressed, erase the screen, create a snake object, clear the input stack,
+			if buttons.buttons.getPressed() & buttons.K_A: # if start is pressed, erase the screen, create a snake object, clear the input stack,
 				paused = True
 
 	elif Gamemode == "Dead":
 		if not DisplayDone: # The same as the menu, but with different text
 			highScore = highScoreManager(gameSnake.score, dificultyCode)
-			disp.fill(Display.colors.Black)
+			disp.fill(display.colors.Black)
 			disp.text(
 				font_16x32,
 				"You Died",
 				90,
 				90,
-				Display.colors.Red
+				display.colors.Red
 			)
 			disp.text(
 				font_8x16,
 				"Your score was " + str(gameSnake.score),
 				90+3,
 				90+30,
-				Display.colors.Red
+				display.colors.Red
 			)
 			disp.text(
 				font_8x16,
 				"Your highscore is " + str(highScore),
 				90+3,
 				90+45,
-				Display.colors.Red
+				display.colors.Red
 			)
 			DisplayDone = True
 
-		if buttons.buttons.get_pressed() & buttons.K_START:
+		if buttons.buttons.getPressed() & buttons.K_START:
 			Gamemode = "Game Play"
 			DisplayDone = False
-			disp.fill(Display.colors.Black)
+			disp.fill(display.colors.Black)
 			gameSnake = snake()
 			up, down, left, right = False, False, False, False
 			upOpen, downOpen, leftOpen, rightOpen = False, False, False, False # Keeps track of whether the buttons is already pressed, so that when you hold it down it only triggers once
 			i = 0
 			inputStack = []
 
-		if buttons.buttons.get_pressed() & buttons.K_SELECT: # if start is pressed, erase the screen, create a snake object, clear the input stack,
+		if buttons.buttons.getPressed() & buttons.K_SELECT: # if start is pressed, erase the screen, create a snake object, clear the input stack,
 			Gamemode = "Settings Menu"
 			menuSelection = 0
 			DisplayDone = False
 			inputStack = []
-			disp.fill(Display.colors.Black)
+			disp.fill(display.colors.Black)
 
 print("Snakey loaded sucessfully")
 while True:
