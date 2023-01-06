@@ -94,7 +94,7 @@ disp.text(
 	display.colors.White
 )
 
-smtp = umail.SMTP('smtp.gmail.com', 587, username='jimmy.l.smythe@gmail.com', password='klralwdsexpaeoba')
+smtp = umail.SMTP('smtp.gmail.com', 587, username=f'{From}', password='????????????????')
 
 disp.text(
 	font_16x32,
@@ -184,10 +184,10 @@ def drawKB(letterCol, letterRow):
 
 def sendEmail():
 	global inputValues
-	smtp = umail.SMTP('smtp.gmail.com', 587, username='jimmy.l.smythe@gmail.com', password='klralwdsexpaeoba')
-	smtp.to('smythe1jh@marisths.net')
+	smtp = umail.SMTP('smtp.gmail.com', 587, username=f'{From}', password='???????????????')
+	smtp.to(f'To')
 
-	smtp.write("From: Jimmy <jimmy.l.smythe@gmail.com>\n")
+	smtp.write(f"From: {from}\n")
 	smtp.write("To: <" + inputValues[0] + ">\n")
 	smtp.write("Subject: " + inputValues[1] + "\n\n")
 	smtp.write(inputValues[2])
