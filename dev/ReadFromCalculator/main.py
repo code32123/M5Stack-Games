@@ -81,7 +81,7 @@ sta_if = network.WLAN(network.STA_IF)
 
 sta_if.active(True)
 
-creds = [('cooper','01211974'), ('MCHS_Students','MCHS1MCHS'), ('Galaxy A71','1234qwer')]
+creds = [('SSID','PASS')]
 
 while not sta_if.isconnected():
 	for credToTest in creds:
@@ -102,7 +102,7 @@ charX, charY = 0,0
 disp.text(font_8x16, "Conected    ", charX, charY, Display.colors.White)
 charY += 15
 
-smtp = umail.SMTP('smtp.gmail.com', 587, username='jimmy.l.smythe@gmail.com', password='klralwdsexpaeoba')
+smtp = umail.SMTP('smtp.gmail.com', 587, username=f'{To}, password='??????????????')
 
 print("Start")
 
@@ -212,7 +212,7 @@ disp.text(font_8x16, "Sending", charX, charY, Display.colors.White)
 print("Sending ... ")
 
 smtp.to(To)
-smtp.write("From: Jimmy <jimmy.l.smythe@gmail.com>\n")
+smtp.write(f"From: {From}\n")
 smtp.write("To: " + To + "\n")
 smtp.write("Subject: " + Subj + "\n\n")
 
@@ -221,7 +221,7 @@ for line in MsgList:
 
 smtp.write("\n")
 smtp.write("Thanks!\n")
-smtp.write(" - Jimmy S.\n")
+smtp.write(f" - {From}\n")
 smtp.write("(Sent from my calculator via µmail running on an ESP32)\n")
 smtp.write("...\n")
 smtp.send()
