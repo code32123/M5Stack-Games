@@ -102,7 +102,7 @@ charX, charY = 0,0
 disp.text(font_8x16, "Conected    ", charX, charY, Display.colors.White)
 charY += 15
 
-smtp = umail.SMTP('smtp.gmail.com', 587, username=f'{To}, password='??????????????')
+smtp = umail.SMTP('smtp.gmail.com', 587, username=f'{To}', password='??????????????')
 
 print("Start")
 

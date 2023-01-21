@@ -8,9 +8,13 @@ import buttons
 import json
 import machine
 
+class processClickReturn():
+	NeedKeyboard = 2
+	HandlePress = 1
+	Nothing = 0
 
 class GUIinput():
-	def __init__(self, name='', position = (50, 0), color = display.colors.White, inputType = 'String', value = '', label = '', labelPosition = 'undefined', labelColor = display.colors.White):
+	def __init__(self, name='', position = (100, 0), color = display.colors.White, inputType = 'String', value = '', label = '', labelPosition = 'undefined', labelColor = display.colors.White):
 		self.name = name
 		self.focusState = False
 		self.value = value
@@ -32,6 +36,16 @@ class GUIinput():
 			self.value += key
 			self.Draw()
 
+	def processClick(self): # Returns true if the main loop needs to setup the keyboard for input
+		if self.inputType == "String":
+			return processClickReturn.NeedKeyboard
+		elif self.inputType == "Toggle":
+			self.value = "True" if self.value == "False" else "False"
+			self.Draw()
+		elif self.inputType == "Button":
+			return processClickReturn.HandlePress
+		return processClickReturn.Nothing
+
 	def focus(self):
 		self.focusState = True
 	def unFocus(self):
@@ -39,8 +53,9 @@ class GUIinput():
 	def setFocus(self, focusState):
 		self.focusState = focusState
 		self.Draw()
-	def Draw(self, delMode = False, bg = False):
-		if bg or self.inputType == 'Button':
+	def Draw(self, delMode = False):
+		LightBackground = self.inputType in ['Button', 'Toggle']
+		if LightBackground:
 			disp.fill_rect(self.position[0], self.position[1]-2, 200, 20, display.colors.convertColor(20, 20, 20))
 		if not self.label == '':
 			disp.text(
@@ -52,11 +67,11 @@ class GUIinput():
 			)
 		disp.text(
 			font_8x16,
-			self.value + ((' ') if delMode else ''),
+			self.value + (' ' if delMode else ''),
 			self.position[0] + 5,
 			self.position[1],
 			self.color,
-			display.colors.convertColor(20, 20, 20) if (bg or self.inputType == 'Button') else display.colors.convertColor(0, 0, 0)
+			display.colors.convertColor(20, 20, 20) if LightBackground else display.colors.convertColor(0, 0, 0),
 			
 		)
 		if self.focusState:
@@ -89,13 +104,13 @@ spriteBuffer = bytearray(512) # Keeps track of the buffer for the sprites. Not s
 #https://github.com/russhughes/ili9342c_mpy/blob/main/examples/M5STACK/bitarray.py
 
 try:
-	with open('/Set/settings', 'r') as f:
+	with open('/sd/settings', 'r') as f:
 		settings = json.loads(f.read())
 except Exception as err:
 	print("Failed to save settings because:")
 	print(err)
 	print("Resetting to defaults.")
-	settings = [['SSID', ''], ['Pass', '']]
+	settings = [['SSID', '', 'String'], ['Pass', '', 'String']]#, ['Screenshots', 'False', 'Toggle']]
 
 settingsInputs = []
 
@@ -108,10 +123,14 @@ disp.text(
 )
 y = 40
 for setting in settings:
-	settingsInputs.append(  GUIinput(name = 'TextInput', position = (50, y), label = setting[0], labelPosition = (5, y), value = setting[1])  )
+	try:
+		settingsInputs.append(  GUIinput(name = 'TextInput', position = (100, y), label = setting[0], labelPosition = (5, y), value = setting[1], inputType = setting[2])  )
+	except IndexError: # If it can't get setting[2], default to string
+		settingsInputs.append(  GUIinput(name = 'TextInput', position = (100, y), label = setting[0], labelPosition = (5, y), value = setting[1], inputType = "String")  )
+
 	y += 22
 
-settingsInputs.append(  GUIinput(name = 'DoneButton', position = (50, y), value = 'Save & Exit', inputType = 'Button')  )
+settingsInputs.append(  GUIinput(name = 'DoneButton', position = (100, y), value = 'Save & Exit', inputType = 'Button')  )
 
 selection = 0
 
@@ -158,15 +177,19 @@ def main():
 		if checkPresses(buttons.K_SELECT):
 			if settingsInputs[selection].name == 'DoneButton':
 				try:
-					with open('/Set/settings', 'w+') as f:
+					with open('/sd/settings', 'w+') as f:
 						f.write(json.dumps(settings))
 					machine.reset()
 				except Exception as err:
 					print("Failed to save settings because:")
 					print(err)
 			else:
-				typeMode = True
-				updateScreen()
+				inputResponse = settingsInputs[selection].processClick()
+				if inputResponse == processClickReturn.NeedKeyboard:
+					typeMode = True
+					updateScreen()
+				elif inputResponse == processClickReturn.HandlePress:
+					print("I don't know what to do with this")
 
 		if checkPresses(buttons.K_UP):
 			if buttonUpReady:
