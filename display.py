@@ -22,6 +22,7 @@ class colors:
 
 class Display:
 	Width, Height = (320, 240)
+	stealMode = False
 	def __init__(self, spi):
 		self.ScreenBaud = 60000000 # Default = 60000000
 		self.spi = spi
@@ -35,32 +36,29 @@ class Display:
 			dc=Pin(27, Pin.OUT),
 			backlight=Pin(32, Pin.OUT),
 			rotation=0,
-			buffer_size=16*32*2),
+			buffer_size=16*32*2)
 		self.tft.init()
 
-	def getTFTObj(self):
-		return self.tft
-
-	def fill_rect(self, x, y, width, height, color, setBaud = True):
+	def fill_rect(self, x, y, width, height, color, setBaud = False):
 		x, y = int(x), int(y)
-		if setBaud:
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.fill_rect(x, y, width, height, color)
 
-	def rect(self, x, y, width, height, color, setBaud = True):
-		if setBaud:
+	def rect(self, x, y, width, height, color, setBaud = False):
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.rect(int(x), int(y), int(width), int(height), color)
 
-	def pixel(self, x, y, color, setBaud = True):
+	def pixel(self, x, y, color, setBaud = False):
 		x, y = int(x), int(y)
-		if setBaud:
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.pixel(x, y, color)
 
-	def text(self, font, text, x, y, color, bg = colors.Black, setBaud = True):
+	def text(self, font, text, x, y, color, bg = colors.Black, setBaud = False):
 		x, y = int(x), int(y)
-		if setBaud:
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.text(
 			font,
@@ -70,34 +68,39 @@ class Display:
 			color,
 			bg,
 		)
-	def fill(self, color = colors.Black, setBaud = True):
-		self.spi.init(baudrate=self.ScreenBaud)
+	def fill(self, color = colors.Black, setBaud = False):
+		if setBaud or not self.stealMode:
+			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.fill(color)
 
-	def line(self, x0, y0, x1, y1, color, setBaud = True):
+	def line(self, x0, y0, x1, y1, color, setBaud = False):
 		x0, y0 = int(x0), int(y0)
 		x1, y1 = int(x1), int(y1)
-		if setBaud:
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.line(x0, y0, x1, y1, color)
 
-	def vline(self, x, y, length, color, setBaud = True):
+	def vline(self, x, y, length, color, setBaud = False):
 		x, y = int(x), int(y)
-		if setBaud:
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.vline(x, y, length, color)
 
-	def hline(self, x, y, length, color, setBaud = True):
+	def hline(self, x, y, length, color, setBaud = False):
 		x, y = int(x), int(y)
-		if setBaud:
+		if setBaud or not self.stealMode:
 			self.spi.init(baudrate=self.ScreenBaud)
 		self.tft.hline(x, y, length, color)
 
-	def drawIcon(self, icon, x, y, fgColor, bgColor=ili9342c.BLACK, shape=(16, 16), setBaud = True):
+	def drawIcon(self, icon, x, y, fgColor, bgColor=ili9342c.BLACK, shape=(16, 16), setBaud = False):
 		x, y = int(x), int(y)
 		if x >= 0 and y >= 0:
-			if setBaud:
+			if setBaud or not self.stealMode:
 				self.spi.init(baudrate=self.ScreenBaud)
 			spriteBuffer = bytearray(512)
 			self.tft.map_bitarray_to_rgb565(icon, spriteBuffer, shape[0], fgColor, bgColor)
-			self.tft.blit_buffer(spriteBuffer, x, y, shape[0], shape[1])	
+			self.tft.blit_buffer(spriteBuffer, x, y, shape[0], shape[1])
+			
+	def stealSPI(self):
+		self.stealMode=True
+		self.spi.init(baudrate=self.ScreenBaud)

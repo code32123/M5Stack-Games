@@ -109,6 +109,7 @@ def DrawScreen():
 
 currentLevel = 0
 
+disp.stealSPI()
 DrawScreen()
 while True:
 	if buttons.buttons.getPressed() & buttons.K_SELECT:

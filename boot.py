@@ -52,14 +52,14 @@ BaseApps = ['Recent', 'Settings', 'WebRepl', '/']
 apps = ['Recent', 'Settings', 'WebRepl']
 
 def checkKB():
-	disp.fill(display.colors.Black)
+	disp.fill(display.colors.Black, setBaud=True)
 	global runApp
 	try:
 		if buttons.buttons.getPressed() & buttons.K_SELECT and buttons.buttons.getPressed() & buttons.K_START:
 			print("Quiting for ampy! (SELECT & START during boot)")
 			runApp = False
 	except OSError:
-		disp.text(font_8x16, "Keyboard error"  , 50, 20+(16*0), display.colors.Red)
+		disp.text(font_8x16, "Keyboard error"  , 50, 20+(16*0), display.colors.Red, setBaud=True)
 		disp.text(font_8x16, "Try re-connecting"    , 50, 20+(16*1), display.colors.Red)
 		disp.text(font_8x16, "Try Again",  25, 205, display.colors.Red)
 		disp.text(font_8x16, "Skip"     , 240, 205, display.colors.Red)
@@ -68,7 +68,7 @@ def checkKB():
 		while not (a or b):
 			a, b = buttons.buttons.getDown('A'), buttons.buttons.getDown('C')
 			if (time.ticks_ms() % 2000) == 0:
-				disp.drawIcon(BootSprites.KeyboardError, 20, 20, display.colors.Red)
+				disp.drawIcon(BootSprites.KeyboardError, 20, 20, display.colors.Red, setBaud=True)
 			elif (time.ticks_ms() % 2000) == 1000:
 				disp.drawIcon(BootSprites.Keyboard, 20, 20, display.colors.Red)
 		if a:
@@ -80,14 +80,14 @@ if runApp:
 	checkKB()
 
 def checkSDCard():
-	disp.fill(display.colors.Black)
+	disp.fill(display.colors.Black, setBaud=True)
 	global sd, runApp
 	try:
 		sd = SDCard.SDCard(spi, Pin(4))
 		os.mount(sd, '/sd')
 		print("Boot: SD card mounted succesfully")
 	except:
-		disp.text(font_8x16, "SD Card error"        , 50, 20+(16*0), display.colors.Red)
+		disp.text(font_8x16, "SD Card error"        , 50, 20+(16*0), display.colors.Red, setBaud=True)
 		disp.text(font_8x16, "Try re-inserting"     , 50, 20+(16*1), display.colors.Red)
 		disp.text(font_8x16, "Press A to try again" , 50, 20+(16*2), display.colors.Red)
 		disp.text(font_8x16, "Press B to skip"      , 50, 20+(16*3), display.colors.Red)
@@ -98,7 +98,7 @@ def checkSDCard():
 				a, b = buttons.buttons.getPressed() & buttons.K_A, buttons.buttons.getPressed() & buttons.K_B
 			except OSError:
 				checkKB()
-				disp.text(font_8x16, "SD Card error"        , 50, 20+(16*0), display.colors.Red)
+				disp.text(font_8x16, "SD Card error"        , 50, 20+(16*0), display.colors.Red, setBaud=True)
 				disp.text(font_8x16, "Try re-inserting"     , 50, 20+(16*1), display.colors.Red)
 				disp.text(font_8x16, "Press A to try again" , 50, 20+(16*2), display.colors.Red)
 				disp.text(font_8x16, "Press B to skip"      , 50, 20+(16*3), display.colors.Red)
@@ -187,7 +187,7 @@ def launcher():
 	apps.append('/')
 
 	print("Boot: Available apps:", apps)
-	disp.text(font_16x32, "Apps", 0, 0, display.colors.Green)
+	disp.text(font_16x32, "Apps", 0, 0, display.colors.Green, setBaud=True)
 	i = 0
 	for app in apps:
 		options.append(app)
@@ -196,7 +196,7 @@ def launcher():
 	
 	while not DoneMenu:
 		if not displayDone:
-			disp.drawIcon(BootSprites.Cursor, 30, 42+menuSelection*20, display.colors.Green)
+			disp.drawIcon(BootSprites.Cursor, 30, 42+menuSelection*20, display.colors.Green, setBaud=True)
 			displayDone = True
 		if buttons.buttons.getPressed() & buttons.K_UP:
 			if not buttonUpPressed:
@@ -211,7 +211,7 @@ def launcher():
 		if buttons.buttons.getPressed() & buttons.K_DOWN:
 			if not buttonDownPressed:
 				if menuSelection < len(apps)-1:
-					disp.drawIcon(BootSprites.Blank, 30, 42+menuSelection*20, display.colors.Green)
+					disp.drawIcon(BootSprites.Blank, 30, 42+menuSelection*20, display.colors.Green, setBaud=True)
 					menuSelection += 1
 					disp.drawIcon(BootSprites.Cursor, 30, 42+menuSelection*20, display.colors.Green)
 					buttonDownPressed = True
